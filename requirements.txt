@@ -1,0 +1,14 @@
+# Core dependencies
+torch==2.6.0+cu126  # PyTorch with CUDA 12.6 support (if using CUDA)
+# If you want to force a CPU-only version, use:
+# torch==2.0.0  # PyTorch (CPU version, automatically detected based on the system)
+torchvision>=0.15.0  # PyTorch's vision library (compatible with the installed PyTorch version)
+torchaudio>=2.0.0  # PyTorch's audio library (compatible with the installed PyTorch version)
+
+# Additional libraries
+numpy>=2.2.0  # For numerical computations
+matplotlib>=3.10.0  # For plotting
+Pillow>=11.1.0  # For image processing
+seaborn>=0.13.2  # For statistical visualization
+tqdm>=4.67.1  # For progress bars
+torchinfo>=1.8.0  # For PyTorch model summaries
