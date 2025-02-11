@@ -15,6 +15,8 @@ import matplotlib.pyplot as pyplot
 import seaborn
 import time
 import torchinfo
+import classifier
+import parameters
 from tqdm.auto import tqdm
 from timeit import default_timer as timer
 
@@ -23,96 +25,40 @@ if __name__ == "__main__":
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
     CPU_THREADS = os.cpu_count()
 
-    # def walk_through_dir(dir_path):
-    #     for dirpath, dirnames, filenames in os.walk(dir_path):
-    #         print(f"There are {len(dirnames)} directories and {len(filenames)} images in '{dirpath}'.")
-        
-    DATASET_DIRECTORY = "Dataset"
-    #walk_through_dir(DATASET_DIRECTORY)
+    hyperparameters = parameters.Hyperparameters()
+    hyperparameters.print_hyperparameters()
+    directories = parameters.Directories()
+    directories.print_directories()
 
-    TRAIN_DIRECTORY = "Dataset/train/train/all"
-    TEST_DIRECTORY = "Dataset/test_origin/test_origin"
 
-    IMAGE_WIDTH = 512
-    IMAGE_HEIGHT = 512
-    IMAGE_SIZE = (IMAGE_WIDTH, IMAGE_HEIGHT)
-
-    SEED = 70
-    NUM_EPOCHS = 20
-    BATCH_SIZE = 20
-
-    random.seed(SEED)
+    random.seed(hyperparameters.SEED)
     seaborn.set_theme()
 
     # Define the transformations that should be applied to the images
     DATA_TRANSFORM = transforms.Compose([
-        transforms.Resize(size = IMAGE_SIZE),
+        transforms.Resize(size = hyperparameters.IMAGE_SIZE),
         transforms.RandomHorizontalFlip(p = 0.5),
         transforms.ToTensor() # Convert the image to a pytorch tensor
     ])
 
 
-    print("\n#########################################\n")
-
+    print("\n=============================================")
     print(f"torch version: {torch.__version__}")
     print(f"compute device: {DEVICE}")
-    print(f"dataset directory: {DATASET_DIRECTORY}")
-    print(f"train directory: {TRAIN_DIRECTORY}")
-    print(f"test directory: {TEST_DIRECTORY}")
-    print(f"image size: {IMAGE_SIZE}")
-    print(f"seed: {SEED}")
-    print(f"epoch count: {NUM_EPOCHS}")
-    print(f"batch size: {BATCH_SIZE}\n")
-    print(f"data transform: {DATA_TRANSFORM}")
+    print(f"dataset directory: {directories.DATASET_DIRECTORY}")
+    print(f"train directory: {directories.TRAIN_DIRECTORY}")
+    print(f"test directory: {directories.TEST_DIRECTORY}")
+    print(f"image size: {hyperparameters.IMAGE_SIZE}")
+    print(f"seed: {hyperparameters.SEED}")
+    print(f"epoch count: {hyperparameters.NUM_EPOCHS}")
+    print(f"batch size: {hyperparameters.BATCH_SIZE}\n")
+    print("\n=============================================\n")
 
-    print("\n#########################################")
-
-
-    # def plot_transformed_images(image_paths, transform, n=3, seed=SEED):
-    #     random.seed(seed)
-    #     random_image_paths = random.sample(image_paths, k=n)
-    #     for image_path in random_image_paths:
-    #         with Image.open(image_path) as f:
-    #             fig, ax = pyplot.subplots(1, 2)
-    #             ax[0].imshow(f) 
-    #             ax[0].set_title(f"Original \nSize: {f.size}")
-    #             ax[0].axis("off")
-
-    #             transformed_image = transform(f).permute(1, 2, 0)
-    #             ax[1].imshow(transformed_image) 
-    #             ax[1].set_title(f"Transformed \nSize: {transformed_image.shape}")
-    #             ax[1].axis("off")
-    #             class_name = Path(image_path).stem.split('_')[1]
-    #             fig.suptitle(f"Class: {class_name}", fontsize=16)
-
-    #image_path_list= glob.glob(f"{DATASET_DIRECTORY}/*/*/*/*.jpg")
-    #random_image_path = random.choice(image_path_list)
-    #pyplot.ion()
-
-    ## Display a random image
-    #image_class = Path(random_image_path).parent.stem
-    #img = Image.open(random_image_path)
-    #print(f"Random image path: {random_image_path}")
-    #print(f"Image class: {image_class}")
-    #print(f"Image height: {img.height}") 
-    #print(f"Image width: {img.width}")
-    ##img.show()
-    #img_as_array = numpy.asarray(img)
-    #fig, ax = pyplot.subplots(figsize=(8, 6))
-    #pyplot.imshow(img_as_array)
-    #pyplot.title(f"Image class: {image_class} | Image shape: {img_as_array.shape} -> [height, width, color_channels]")
-    #pyplot.axis(False)
-    #plot = pyplot.show()
-    #input("Press Enter to close the plot...")
-    #pyplot.close(fig)
-
-    #plot_transformed_images(image_path_list, transform=DATA_TRANSFORM, n=3)
-
-    train_data = datasets.ImageFolder(root=TRAIN_DIRECTORY,
+    train_data = datasets.ImageFolder(root=directories.TRAIN_DIRECTORY,
                                     transform=DATA_TRANSFORM,
                                     target_transform=None)
 
-    test_data = datasets.ImageFolder(root=TEST_DIRECTORY, transform=DATA_TRANSFORM)
+    test_data = datasets.ImageFolder(root=directories.TEST_DIRECTORY, transform=DATA_TRANSFORM)
 
     print(f"\ntrain data:\n{train_data}\ntest data:\n{test_data}")
 
@@ -125,26 +71,6 @@ if __name__ == "__main__":
     print("\ndata set lengths: ", len(train_data), len(test_data))
 
     print("\n#########################################")
-
-    #----------------------
-    #img, label = train_data[0][0], train_data[0][1]
-    #print(f"Image tensor:\n{img}")
-    #print(f"Image shape: {img.shape}")
-    #print(f"Image datatype: {img.dtype}")
-    #print(f"Image label: {label}")
-    #print(f"Label datatype: {type(label)}")
-
-    #img_permute = img.permute(1, 2, 0)
-    #print(f"Original shape: {img.shape} -> [color_channels, height, width]")
-    #print(f"Image permute shape: {img_permute.shape} -> [height, width, color_channels]")
-
-    # Plot the image
-    #pyplot.figure(figsize=(10, 7))
-    #pyplot.imshow(img.permute(1, 2, 0))
-    #pyplot.axis("off")
-    #pyplot.title(class_names[label], fontsize=14)
-    #---------------------
-
 
     train_dataloader = DataLoader(dataset=train_data, 
                                 batch_size=1, # how many samples per batch?
@@ -162,14 +88,9 @@ if __name__ == "__main__":
     
     print("\n#########################################")
 
-    #img, label = next(iter(train_dataloader))
-
-    #print(f"Image shape: {img.shape} -> [batch_size, color_channels, height, width]")
-    #print(f"Label shape: {label.shape}")
-
     # Create training transform with TrivialAugment
     train_transform = transforms.Compose([
-        transforms.Resize(IMAGE_SIZE),
+        transforms.Resize(hyperparameters.IMAGE_SIZE),
         transforms.TrivialAugmentWide(),
         transforms.ToTensor()])
     
@@ -177,34 +98,34 @@ if __name__ == "__main__":
 
     # Create testing transform (no data augmentation)
     test_transform = transforms.Compose([
-        transforms.Resize(IMAGE_SIZE),
+        transforms.Resize(hyperparameters.IMAGE_SIZE),
         transforms.ToTensor()])
     
     print(f"\ntesting transform: {test_transform}")
     
     print("\n#########################################")
 
-    train_data_augmented = datasets.ImageFolder(TRAIN_DIRECTORY, transform=train_transform)
+    train_data_augmented = datasets.ImageFolder(directories.TRAIN_DIRECTORY, transform=train_transform)
         
     print(f"\ntraining augmented: {train_data_augmented}")
 
-    test_data_augmented = datasets.ImageFolder(TEST_DIRECTORY, transform=test_transform)
+    test_data_augmented = datasets.ImageFolder(directories.TEST_DIRECTORY, transform=test_transform)
 
     print(f"\ntesting augmented: {train_data_augmented}")
     
     print("\n#########################################")
 
-    torch.manual_seed(SEED)
+    torch.manual_seed(hyperparameters.SEED)
 
     train_dataloader_augmented = DataLoader(train_data_augmented, 
-                                            batch_size=BATCH_SIZE, 
+                                            batch_size=hyperparameters.BATCH_SIZE, 
                                             shuffle=True,
                                             num_workers=CPU_THREADS)
     
     print(f"\ntraining dataloader augmented: {train_dataloader_augmented}")
 
     test_dataloader_augmented = DataLoader(test_data_augmented, 
-                                        batch_size=BATCH_SIZE, 
+                                        batch_size=hyperparameters.BATCH_SIZE, 
                                         shuffle=False, 
                                         num_workers=CPU_THREADS)
     
@@ -212,56 +133,13 @@ if __name__ == "__main__":
     
     print("\n#########################################")
 
-    class ImageClassifier(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.conv_layer_1 = nn.Sequential(
-                nn.Conv2d(3, 64, 3, padding=1),
-                nn.ReLU(),
-                nn.BatchNorm2d(64),
-                nn.MaxPool2d(2)
-            )
-            self.conv_layer_2 = nn.Sequential(
-                nn.Conv2d(64, 512, 3, padding=1),
-                nn.ReLU(),
-                nn.BatchNorm2d(512),
-                nn.MaxPool2d(2)
-            )
-            self.conv_layer_3 = nn.Sequential(
-                nn.Conv2d(512, 512, kernel_size=3, padding=1),
-                nn.ReLU(),
-                nn.BatchNorm2d(512),
-                nn.MaxPool2d(2)
-            )
-            
-            # Use a placeholder for in_features that will be dynamically calculated
-            self.classifier = nn.Sequential(
-                nn.Flatten(),
-                nn.Linear(in_features=1, out_features=2)  # Replace 1 with the correct value dynamically
-            )
-
-        def forward(self, x: torch.Tensor):
-            x = self.conv_layer_1(x)
-            x = self.conv_layer_2(x)
-            x = self.conv_layer_3(x)
-            x = self.classifier(x)
-            return x
-
-        def compute_linear_input_size(self, input_shape):
-            # Pass a dummy tensor through the convolutional layers
-            dummy_input = torch.randn(1, *input_shape)
-            x = self.conv_layer_1(dummy_input)
-            x = self.conv_layer_2(x)
-            x = self.conv_layer_3(x)
-            return x.numel()
-
     # Instantiate the model
-    model = ImageClassifier()
+    model = classifier.ImageClassifier()
    
     print(f"\nmodel: {model}")
 
     # Compute the correct input size for the Linear layer
-    input_shape = (3, IMAGE_HEIGHT, IMAGE_WIDTH)  # Assuming 3 channels (RGB)
+    input_shape = (3, hyperparameters.IMAGE_HEIGHT, hyperparameters.IMAGE_WIDTH)  # Assuming 3 channels (RGB)
     
     print(f"\ninput shape: {input_shape}")
 
@@ -280,26 +158,9 @@ if __name__ == "__main__":
     print(f"\nmodel: {model}")
 
     print("\n#########################################\n")
-
-    # 1. Get a batch of images and labels from the DataLoader
-    #img_batch, label_batch = next(iter(train_dataloader_augmented))
-
-    # 2. Get a single image from the batch and unsqueeze the image so its shape fits the model
-    # img_single, label_single = img_batch[0].unsqueeze(dim=0), label_batch[0]
-    # print(f"Single image shape: {img_single.shape}\n")
-
-    # 3. Perform a forward pass on a single image
-    # model.eval()
-    # pred = inference_mode.model(img_single.to(DEVICE))
-        
-    # 4. Print out what's happening and convert model logits -> pred probs -> pred label
-    # print(f"Output logits:\n{pred}\n")
-    # print(f"Output prediction probabilities:\n{torch.softmax(pred, dim=1)}\n")
-    # print(f"Output prediction label:\n{torch.argmax(torch.softmax(pred, dim=1), dim=1)}\n")
-    # print(f"Actual label:\n{label_single}")
         
     # do a test pass through of an example input size 
-    summary(model, input_size=[1, 3, IMAGE_WIDTH ,IMAGE_HEIGHT])
+    summary(model, input_size=[1, 3, hyperparameters.IMAGE_WIDTH ,hyperparameters.IMAGE_HEIGHT])
     print("\n#########################################\n")
 
     def train_step(model: torch.nn.Module, 
@@ -436,8 +297,8 @@ if __name__ == "__main__":
         return results
 
     # Set random seeds
-    torch.manual_seed(SEED) 
-    torch.cuda.manual_seed(SEED)
+    torch.manual_seed(hyperparameters.SEED) 
+    torch.cuda.manual_seed(hyperparameters.SEED)
 
     # Setup loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
@@ -452,7 +313,7 @@ if __name__ == "__main__":
                         test_dataloader=test_dataloader_augmented,
                         optimizer=optimizer,
                         loss_fn=loss_fn,
-                        epochs=NUM_EPOCHS)
+                        epochs=hyperparameters.NUM_EPOCHS)
     
     end_time = timer()
     print(f"Total training time: {end_time-start_time:.3f} seconds")
@@ -539,7 +400,7 @@ if __name__ == "__main__":
     print(f"Custom image dtype: {custom_image.dtype}")
 
     custom_image_transform = transforms.Compose([
-        transforms.Resize(IMAGE_SIZE),
+        transforms.Resize(hyperparameters.IMAGE_SIZE),
     ])
 
     # Transform target image
@@ -604,7 +465,7 @@ if __name__ == "__main__":
         custom_image = custom_image / 255. 
 
         custom_image_transform = transforms.Compose([
-            transforms.Resize(IMAGE_SIZE),
+            transforms.Resize(hyperparameters.IMAGE_SIZE),
         ])
 
         # Transform target image
@@ -659,7 +520,7 @@ if __name__ == "__main__":
         custom_image = custom_image / 255. 
 
         custom_image_transform = transforms.Compose([
-            transforms.Resize(IMAGE_SIZE),
+            transforms.Resize(hyperparameters.IMAGE_SIZE),
         ])
 
         # Transform target image
