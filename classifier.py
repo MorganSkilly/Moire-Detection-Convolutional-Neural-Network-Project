@@ -1,23 +1,5 @@
-import os
 import torch
 from torch import nn
-from torch import inference_mode
-from torch.utils.data import DataLoader
-import torchvision
-from torchvision import datasets, transforms
-from torchinfo import summary
-import random
-from PIL import Image
-import glob
-from pathlib import Path
-import numpy
-import matplotlib.pyplot as pyplot
-import seaborn
-import time
-import torchinfo
-import classifier as mm
-from tqdm.auto import tqdm
-from timeit import default_timer as timer
 
 class ImageClassifier(nn.Module):
     def __init__(self):
@@ -53,11 +35,3 @@ class ImageClassifier(nn.Module):
         x = self.conv_layer_3(x)
         x = self.classifier(x)
         return x
-
-    def compute_linear_input_size(self, input_shape):
-        # Pass a dummy tensor through the convolutional layers
-        dummy_input = torch.randn(1, *input_shape)
-        x = self.conv_layer_1(dummy_input)
-        x = self.conv_layer_2(x)
-        x = self.conv_layer_3(x)
-        return x.numel()
