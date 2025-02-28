@@ -1,9 +1,32 @@
+import os
+import torch
+import torchvision
+from torchvision import datasets, transforms
+import parameters
 
+# DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"
+CPU_THREADS = os.cpu_count()
 
 directory = "Dataset/test_origin/test_origin/clean"
 
 moire = 0
 clean = 0
+
+hyperparameters = parameters.Hyperparameters()
+directories = parameters.Directories()
+
+model = model = torch.load("models/moire_model_5.pth", "cpu", weights_only=False)
+
+DATA_TRANSFORM = transforms.Compose([
+        transforms.Resize(size = hyperparameters.IMAGE_SIZE),
+        transforms.RandomHorizontalFlip(p = 0.5),
+        transforms.ToTensor()
+    ])
+
+test_data = datasets.ImageFolder(root = directories.TEST_DIRECTORY, transform=DATA_TRANSFORM)
+
+class_names = test_data.classes
 
 # Iterate over each file in the directory
 for filename in os.listdir(directory):
