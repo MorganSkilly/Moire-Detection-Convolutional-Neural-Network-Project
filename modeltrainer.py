@@ -52,6 +52,7 @@ def train(hyperparameters, directories):
     train_transform = transforms.Compose([
         transforms.Resize(hyperparameters.IMAGE_SIZE),
         transforms.TrivialAugmentWide(),
+        transforms.Grayscale(num_output_channels=1),
         transforms.ToTensor()])    
     train_data_augmented = datasets.ImageFolder(directories.TRAIN_DIRECTORY,
                                                 transform=train_transform)
@@ -63,6 +64,7 @@ def train(hyperparameters, directories):
     # Create testing transform (no data augmentation)
     test_transform = transforms.Compose([
         transforms.Resize(hyperparameters.IMAGE_SIZE),
+        transforms.Grayscale(num_output_channels=1),
         transforms.ToTensor()])
     test_data_augmented = datasets.ImageFolder(directories.TEST_DIRECTORY,
                                                transform=test_transform)
